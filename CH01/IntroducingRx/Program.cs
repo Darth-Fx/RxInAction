@@ -20,6 +20,7 @@ namespace IntroducingRx
                     .Subscribe(Console.WriteLine); 
 
             subscription.Dispose();
+            Console.ReadLine();
         }
     }
 }
