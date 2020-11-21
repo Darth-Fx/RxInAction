@@ -101,13 +101,13 @@ namespace FirstRxExample
 
         private static async Task TestConcurrentTicks(StockTicker stockTicker)
         {
-            IEnumerable<StockTick> set = new List<StockTick>
-            {
-                new StockTick() { Price = 100, QuoteSymbol = "MSFT" },
-                new StockTick() { Price = 150, QuoteSymbol = "INTC" },
-                new StockTick() { Price = 170, QuoteSymbol = "MSFT" },
-                new StockTick() { Price = 195.5M, QuoteSymbol = "MSFT" }
-            };
+            var set = new List<StockTick>
+                {
+                    new StockTick() { Price = 100, QuoteSymbol = "MSFT" },
+                    new StockTick() { Price = 150, QuoteSymbol = "INTC" },
+                    new StockTick() { Price = 170, QuoteSymbol = "MSFT" },
+                    new StockTick() { Price = 195.5M, QuoteSymbol = "MSFT" }
+                };
             
             foreach(var tick in set)
             {
