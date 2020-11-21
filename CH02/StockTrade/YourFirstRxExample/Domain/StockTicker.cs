@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace FirstRxExample
 {
@@ -9,6 +10,11 @@ namespace FirstRxExample
         public void Notify(StockTick tick)
         {
             StockTick(this, tick);
+        }
+
+        public async Task NotifyAsync(StockTick tick)
+        {
+            await Task.Run(() => StockTick(this, tick));
         }
     }
 

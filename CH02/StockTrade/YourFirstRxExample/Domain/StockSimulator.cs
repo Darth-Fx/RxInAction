@@ -35,18 +35,18 @@ namespace FirstRxExample
             {
                 UpdatePrices();
                 PrintPrices();
-                Emit();
+                await Emit();
                 await Task.Delay(2000);
             }
         }
 
-        private void Emit()
+        private async Task Emit()
         {
             Console.WriteLine($"Emit: entry Thread Nr: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
             Console.WriteLine("Emitting...");
             foreach (var stockTick in ticks)
             {
-                stockTicker.Notify(stockTick);
+                await stockTicker.NotifyAsync(stockTick);
             }
         }
 

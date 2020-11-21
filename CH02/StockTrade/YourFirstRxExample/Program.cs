@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
@@ -32,7 +33,7 @@ namespace FirstRxExample
             
             await ShowMenu();
           
-            GC.KeepAlive(stockMonitor);
+            GC.KeepAlive(stockMonitor); //interesting
             Console.WriteLine("Press <enter> to continue...");
             Console.ReadLine();
             Console.WriteLine("Bye Bye");
@@ -49,13 +50,13 @@ namespace FirstRxExample
             switch (selection)
             {
                 case "1":
-                    ManualSimulator(_stockTicker);
+                    await ManualSimulator(_stockTicker);
                     break;
                 case "2":
                     await AutomaticSimulator(_stockTicker);
                     break;
                 case "3":
-                    TestConcurrentTicks(_stockTicker);
+                    await TestConcurrentTicks(_stockTicker);
                     break;
                 case "x":
                     return;
@@ -71,7 +72,7 @@ namespace FirstRxExample
             await simulator.Run();
         }
 
-        private static void ManualSimulator(StockTicker stockTicker)
+        private static async Task ManualSimulator(StockTicker stockTicker)
         {
             //////////////////////////////////////////////////////
             // A small program to let you enter the Ticks info. //
@@ -89,7 +90,7 @@ namespace FirstRxExample
                 decimal price;
                 if (decimal.TryParse(Console.ReadLine(), out price))
                 {
-                    stockTicker.Notify(new StockTick() { Price = price, QuoteSymbol = symbol });
+                    await stockTicker.NotifyAsync(new StockTick() { Price = price, QuoteSymbol = symbol });
                 }
                 else
                 {
@@ -98,12 +99,25 @@ namespace FirstRxExample
             }
         }
 
-        private static void TestConcurrentTicks(StockTicker stockTicker)
+        private static async Task TestConcurrentTicks(StockTicker stockTicker)
         {
-            ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 100, QuoteSymbol = "MSFT" }));
-            ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 150, QuoteSymbol = "INTC" }));
-            ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 170, QuoteSymbol = "MSFT" }));
-            ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 195.5M, QuoteSymbol = "MSFT" }));
+            IEnumerable<StockTick> set = new List<StockTick>
+            {
+                new StockTick() { Price = 100, QuoteSymbol = "MSFT" },
+                new StockTick() { Price = 150, QuoteSymbol = "INTC" },
+                new StockTick() { Price = 170, QuoteSymbol = "MSFT" },
+                new StockTick() { Price = 195.5M, QuoteSymbol = "MSFT" }
+            };
+            
+            foreach(var tick in set)
+            {
+                await stockTicker.NotifyAsync(tick);
+            }
+
+            //ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 100, QuoteSymbol = "MSFT" }));
+            //ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 150, QuoteSymbol = "INTC" }));
+            //ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 170, QuoteSymbol = "MSFT" }));
+            //ThreadPool.QueueUserWorkItem((_) => stockTicker.Notify(new StockTick() { Price = 195.5M, QuoteSymbol = "MSFT" }));
         }
     }
 }
