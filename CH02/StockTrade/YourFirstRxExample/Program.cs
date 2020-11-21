@@ -13,7 +13,7 @@ namespace FirstRxExample
     {
         private static StockTicker _stockTicker;
 
-        private static void Main(string[] args)
+        private async static Task Main(string[] args)
         {
             _stockTicker = new StockTicker();
 
@@ -25,12 +25,12 @@ namespace FirstRxExample
             /////////////////////////////////////////////////////////////
 
             // Regular events StockMonitor
-            //var stockMonitor = new StockMonitor(_stockTicker);
+            var stockMonitor = new StockMonitor(_stockTicker);
 
             // Rx StockMonitor - uses Rx to consume and process the stock ticks
-            var stockMonitor = new RxStockMonitor(_stockTicker);
-
-            ShowMenu();
+            //var stockMonitor = new RxStockMonitor(_stockTicker);
+            
+            await ShowMenu();
           
             GC.KeepAlive(stockMonitor);
             Console.WriteLine("Press <enter> to continue...");
@@ -38,9 +38,8 @@ namespace FirstRxExample
             Console.WriteLine("Bye Bye");
         }
 
-        private static void ShowMenu()
+        private async static Task ShowMenu()
         {
-
             Console.WriteLine("Choose a simulation type (or x to exit):");
             Console.WriteLine("1) Manual     - you enter the symbol and price");
             Console.WriteLine("2) Automatic  - the system emits and updates a predefined collection of ticks");
@@ -53,7 +52,7 @@ namespace FirstRxExample
                     ManualSimulator(_stockTicker);
                     break;
                 case "2":
-                    AutomaticSimulator(_stockTicker);
+                    await AutomaticSimulator(_stockTicker);
                     break;
                 case "3":
                     TestConcurrentTicks(_stockTicker);
@@ -64,13 +63,12 @@ namespace FirstRxExample
                     Console.WriteLine("Unknow selection");
                     return;
             }
-
         }
 
-        private static void AutomaticSimulator(StockTicker stockTicker)
+        private static async Task AutomaticSimulator(StockTicker stockTicker)
         {
             var simulator = new StockSimulator(stockTicker);
-            simulator.Run();
+            await simulator.Run();
         }
 
         private static void ManualSimulator(StockTicker stockTicker)

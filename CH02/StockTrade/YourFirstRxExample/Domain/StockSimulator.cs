@@ -10,15 +10,16 @@ namespace FirstRxExample
     /// This simulator will emit a batch of StockTicks every two seconds.
     /// each time, a single item will be selected and updated with a "drastic change" (more than 10%)
     /// </summary>
-    public class StockSimulator
+    public  class StockSimulator
     {
-        private readonly StockTicker _ticker;
-        private IEnumerable<StockTick> _ticks;
-        private int _itemToDrasticUpdate = 0;
-        public StockSimulator(StockTicker ticker)
+        private readonly StockTicker stockTicker;
+        private IEnumerable<StockTick> ticks;
+        private int itemToDrasticUpdate = 0;
+
+        public StockSimulator(StockTicker stockTicker)
         {
-            _ticker = ticker;
-            _ticks = new[]
+            this.stockTicker = stockTicker;
+            ticks = new[]
             {
                 new StockTick() {QuoteSymbol = "MSFT", Price = 53.49M},
                 new StockTick() {QuoteSymbol = "INTC", Price = 32.68M},
@@ -27,34 +28,34 @@ namespace FirstRxExample
             };
         }
 
-        public void Run()
+        public async Task Run()
         {
-            Task.Run(() =>
+            Console.WriteLine($"SIM entry Thread Nr: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            while (true)
             {
-                while (true)
-                {
-                    UpdatePrices();
-                    PrintPrices();
-                    Emit();
-                    Thread.Sleep(2000);
-                }
-            });
+                UpdatePrices();
+                PrintPrices();
+                Emit();
+                await Task.Delay(2000);
+            }
         }
 
         private void Emit()
         {
+            Console.WriteLine($"Emit: entry Thread Nr: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
             Console.WriteLine("Emitting...");
-            foreach (var stockTick in _ticks)
+            foreach (var stockTick in ticks)
             {
-                _ticker.Notify(stockTick);
+                stockTicker.Notify(stockTick);
             }
         }
 
         private void PrintPrices()
         {
+            Console.WriteLine($"PrintPrices: entry Thread Nr: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
             Console.WriteLine("Next series to emit:");
             Console.WriteLine("\t");
-            foreach (var stockTick in _ticks)
+            foreach (var stockTick in ticks)
             {
                 Console.WriteLine("{{{0} - {1}}}, ", stockTick.QuoteSymbol, stockTick.Price);
             }
@@ -64,14 +65,15 @@ namespace FirstRxExample
 
         private void UpdatePrices()
         {
-            _ticks = _ticks.Select((tick, i) =>
-              {
-                  var changePercentage = _itemToDrasticUpdate == i ? 1.2M : 1.1M;
-                  return new StockTick() { Price = tick.Price * changePercentage, QuoteSymbol = tick.QuoteSymbol };
-              }).ToList();
+            Console.WriteLine($"UpdatePrices: entry Thread Nr: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+            ticks = ticks.Select((tick, i) =>
+            {
+                var changePercentage = itemToDrasticUpdate == i ? 1.2M : 1.1M;
+                return new StockTick() { Price = tick.Price * changePercentage, QuoteSymbol = tick.QuoteSymbol };
+            }).ToList();
 
-            _itemToDrasticUpdate++;
-            _itemToDrasticUpdate %= _ticks.Count();
+            itemToDrasticUpdate++;
+            itemToDrasticUpdate %= ticks.Count();
         }
     }
 }
